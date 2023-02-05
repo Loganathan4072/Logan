@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My-ToDo-app</title>
+        <style>
+            .Edit-button,.Delete-button,.Update-button{
+                 background-color: blueviolet;
+                 color: white;
+                 height: 30px;
+            }
+            .inputv
+            {
+                height: 30px;
+                width: 150px;
+                margin-right: 5px;
+                font-size: 16px;
+                border:none;
+               
+            }
+           .Check
+           {
+            margin:0px 20px 0px 0px;
+            height:15px;
+           
+           }
+          .Add{
+              height: 34px;
+              background-color: lawngreen;
+          }
+          .User-Reference
+          {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Dancing Script', cursive;
+            font-weight: 700;
+            font-size: 40px;
+            height:100px;
+            background-color: rgba(255, 0, 64, 0.874);
+            color:black;
+             position: fixed;
+            top:0;
+            right:0;
+            left:0;
+            z-index: 2;
+            
+          }
+          .Side-div
+          {
+            display: grid;
+           grid-template-rows:100px 100px 100px 100px;
+            column-gap: 20px;
+            width:200px;
+            color: black;
+            margin-top: 100px;
+            padding-left: 0px;
+            position: fixed;
+            left:0;
+            bottom:0;
+            top: 0;
+           
+          }
+          .Todo-div{
+            margin-top: 110px;
+            margin-left:200px ;
+            position: relative;
+            z-index: 1;
+          }
+        .Img{
+            height:70px;
+            margin-right: 20px;
+        }
+       </style>
+     </head>
+    
+    <body style="background-color:rgba(0,0,0,0.1);
+    color:rgb(255, 255, 0);
+    background-color:rgba(0,0,0,1);
+    padding: 0px 0px 1000px 0px;
+    font-size: 19px;">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;700&display=swap" rel="stylesheet">
+       <div class="User-Reference">
+           <div>
+            <img class="Img" src="Icons/Todo-icon.png">
+           </div>
+           <div>MY TODO APP</div>
+           
+       </div>
+       <div class="Side-div">
+        <div style="background-color: cyan;">1.Enter the Task and set the Duedate</div>
+        <div style="background-color:rgba(255, 0, 64, 0.874);">2.Click the 'Add Todo' button to add the task to your list</div>
+        <div style="background-color: cyan;">3.If you want to edit it you can use the 'Edit' button</div>
+        <div style="background-color:rgba(255, 0, 64, 0.874);">4.After editing click on 'Update' button to update your list</div>
+        <div style="background-color: cyan;">5.After completing your task you can click on the checkbox</div>
+       </div>
+       <div class="Todo-div">
+        <input class="inputv" id="todo-title" type="text" placeholder="Enter Tasks"></input>
+        <input class="inputv" id="date-picker" type="date" placeholder="DD-MM-YYYY" />
+         <button class="Add" onclick="addtodo()">Add Todo</button>
+         <div class="todo-box" id="todo-list"></div>
+       </div>
+       
+       
+        <script>
+            // Model section
+            // If local storage has a todos array use it
+            // otherwise use it
+           let todos=[];
+           // Retrieve localStorage
+           const savedTodos=JSON.parse(localStorage.getItem('todos'));
+
+           // check if it's an array
+           if(Array.isArray(savedTodos))
+           {
+                todos=savedTodos;
+           }
+           else{
+            todos=[{
+                title:'Get groceries',
+                dueDate:'2023-01-02',
+                id:'id1'},
+                {
+                title:'Wash car',
+                dueDate:'2023-01-02',
+                id:'id2'
+                }
+                ,{
+                title:'Make dinner',
+                dueDate:'2023-01-02',
+                id:'id3'}];
+           }
+            
+            // Creates a todo
+            function CreateTodo(title,dueDate)
+            {
+                const id=''+new Date().getTime();
+                todos.push({
+                    title: title,
+                    dueDate:dueDate,
+                    id:id
+                });
+                saveTodo();
+            }
+            // Deletes a todo
+            function removeTodo(idToDelete)
+            {
+                todos= todos.filter(function(todo)
+               {
+                if(todo.id === idToDelete)
+                {
+                    return false;
+                }
+                else{
+                    return true;
+                }
+               });
+               saveTodo();
+            }
+           
+           // Edits a todo
+            function edit(editbuttonId)
+            {
+                todos.forEach(function(todo)
+                {
+                    if(todo.id === editbuttonId)
+                    {
+                        todo.isEditing=true;
+                    }
+                });
+                saveTodo();
+            }
+            // Updates a todo
+            function updateTodo(todoId,newValue,newDate)
+            {
+                todos.forEach(function(todo)
+                {
+                    if(todo.id=== todoId)
+                    {
+                        todo.title=newValue;
+                        todo.dueDate=newDate;
+                        todo.isEditing=false;
+                    }
+                });
+                saveTodo();
+            }
+            // Checks if the checkbox is checked
+            function isfinished(checkedtodoID,checked)
+            {
+                todos.forEach(function(todo)
+                {
+                    if(todo.id===checkedtodoID)
+                    {
+                        todo.isDone=checked;
+                    }
+                });
+                saveTodo();
+            }
+            // Saves a todo
+            function saveTodo(){
+                localStorage.setItem('todos',JSON.stringify(todos));
+            }
+
+
+            // Controller section
+            function addtodo()
+            {
+                const textbox=document.getElementById('todo-title');
+                const title=textbox.value;
+                const datePicker=document.getElementById('date-picker');
+                const dueDate=datePicker.value;
+
+                CreateTodo(title,dueDate);
+                render();
+            }
+            function deleteTodo(event)
+            {
+               const deleteButton=event.target;
+               const idToDelete=deleteButton.id;
+
+               removeTodo(idToDelete);
+               render();
+            }
+         
+            function editTodo(event)
+            {
+                const editbutton=event.target;
+                const editbuttonId=editbutton.dataset.todoId;
+
+                edit(editbuttonId);
+                render();
+            }
+
+            function onUpdate(event)
+            {
+                const updatebutton=event.target;
+                const todoId=updatebutton.dataset.todoId;
+
+                const textbox=document.getElementById('edit-title'+ todoId);
+                const newValue=textbox.value;
+
+                const datepicker=document.getElementById('Date-title'+todoId);
+                const newDate=datepicker.value;
+
+                updateTodo(todoId,newValue,newDate);
+                render();
+            }
+            function Isdone(event)
+            {
+                const checkedbox=event.target;
+                const checkedtodoID=checkedbox.dataset.todoId;
+                const checked=checkedbox.checked;
+                
+                isfinished(checkedtodoID,checked);
+                
+                
+            }
+
+            // View section
+            function render()
+            {
+                document.getElementById('todo-list').innerHTML=''; // Reset our list
+            todos.forEach(function(todos)
+            {
+                let element=document.createElement('div');
+        
+                if(todos.isEditing === true)
+                {
+                  const textBox=document.createElement('input');
+                  textBox.type='text';
+                  textBox.id='edit-title'+todos.id;
+                  textBox.style='margin-right:10px;'
+                  element.appendChild(textBox);
+                  
+
+
+                  const datePicker=document.createElement('input');
+                  datePicker.type='date';
+                  datePicker.id='Date-title'+todos.id;
+                  datePicker.style='margin-right:10px'
+                  element.appendChild(datePicker);
+
+                  const updateButton=document.createElement('button');
+                  updateButton.innerText='Update';
+                  updateButton.dataset.todoId=todos.id;
+                  updateButton.onclick=onUpdate;
+                  updateButton.className='Update-button';
+                  element.appendChild(updateButton);
+
+                }
+                else{
+                    element.innerText=todos.title+' '+todos.dueDate;
+                   
+                    const editButton=document.createElement('button');
+                    editButton.innerText='Edit';
+                    editButton.dataset.todoId=todos.id;
+                    element.appendChild(editButton);
+                    editButton.style='margin-left:10px;'
+                    editButton.onclick=editTodo;
+                    editButton.className='Edit-button'
+
+                    const deleteButton=document.createElement('button');
+                    deleteButton.innerText='Delete';
+                    deleteButton.id=todos.id;
+                    element.appendChild(deleteButton);
+                    deleteButton.style='margin-left:10px;'
+                    deleteButton.onclick=deleteTodo;
+                    deleteButton.className='Delete-button';
+
+                    const Checkbox=document.createElement('input');
+                    Checkbox.type='checkbox';
+                    Checkbox.style='margin-top:10px;width:20px;'
+                    Checkbox.onchange=Isdone;
+                    Checkbox.dataset.todoId=todos.id;
+                    Checkbox.className='Check';
+                    if(todos.isDone=== true)
+                    {
+                        Checkbox.checked=true;
+                    }
+                    else{
+                        Checkbox.checked=false;
+                    }
+                    element.prepend(Checkbox);
+
+                }
+            const todolist=document.getElementById('todo-list');
+            todolist.appendChild(element);
+        });
+            }
+          render();
+         
+        </script>
+    </body>
+</html>
